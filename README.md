@@ -20,3 +20,6 @@
     }
 
 enjoy it :)
+
+### LICENSE
+[MIT](https://github.com/ka1hung/mbserver/blob/master/LICENSE)
