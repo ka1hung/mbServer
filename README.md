@@ -4,7 +4,7 @@
 
 ### install
 
-    go get -u github.com/ka1hung/mbserver 
+    go get -u github.com/ka1hung/mbserver
 
 ***
 
