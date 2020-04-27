@@ -1,6 +1,7 @@
 package mbserver
 
 import (
+	"context"
 	"io"
 	"log"
 	"net"
@@ -341,7 +342,7 @@ func (s *Server) ListenCommInspect() CommMSG {
 	return <-s.chanCommInspect
 }
 
-// Start starts the Modbus server listening on "address:port".
+// Start the Modbus server listening on "address:port".
 func (s *Server) Start(addressPort string) {
 	//set server listen
 	listen, err := net.Listen("tcp", addressPort)
@@ -366,6 +367,37 @@ func (s *Server) Start(addressPort string) {
 		select {
 		case <-s.done:
 			break
+		}
+	}
+}
+
+// StartWithContext start the Modbus server listening on "address:port" with context.
+func (s *Server) StartWithContext(ctx context.Context, addressPort string) {
+	//set server listen
+	listen, err := net.Listen("tcp", addressPort)
+	if err != nil {
+		log.Printf("Failed to Listen: %v\n", err)
+	}
+	s.listener = listen
+	defer s.listener.Close()
+
+	//start server listening
+	go func() {
+		for {
+			conn, err := s.listener.Accept()
+			if err != nil {
+				log.Printf("Unable to accept connections: %#v\n", err)
+			}
+			go s.processor(conn)
+		}
+	}()
+
+	for {
+		select {
+		case <-s.done:
+			return
+		case <-ctx.Done():
+			return
 		}
 	}
 }
