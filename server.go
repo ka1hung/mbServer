@@ -261,7 +261,7 @@ func (s *Server) f16(source string, rbuf []byte) []byte {
 	return wbuf
 }
 func (s *Server) passCommMsg(source string, id, fn uint8, addr uint16, coils []bool, regs []uint16) {
-	if s.chanCommInspect != nil {
+	if s.chanCommInspect != nil || len(s.chanCommInspect) < cap(s.chanCommInspect) {
 		s.chanCommInspect <- CommMSG{
 			Source:   source,
 			ID:       id,
