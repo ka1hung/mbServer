@@ -291,7 +291,7 @@ func (s *Server) processor(conn net.Conn) {
 		source := conn.RemoteAddr().String()
 
 		id := int(packet[6])
-		if id > len(s.Datas) {
+		if id > len(s.Datas) || id <= 0 {
 			return
 		}
 		funcCode := int(packet[7])
