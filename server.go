@@ -1,7 +1,6 @@
 package mbserver
 
 import (
-	"context"
 	"io"
 	"log"
 	"net"
@@ -23,11 +22,14 @@ type Server struct {
 	port            int
 	Datas           []Databank
 	done            chan bool
-	chanCommInspect chan CommMSG
+	ChanCommInspect chan CommMSG
 }
 
-// NewServer creates a new Modbus server.
-func NewServer(num uint8) *Server {
+// NewServer creates a new Modbus server and numbers for modbus devices (1~254).
+func NewServer(num int) *Server {
+	if num > 254 || num < 1 {
+		num = 1
+	}
 	s := &Server{}
 	s.Datas = make([]Databank, num)
 	s.done = make(chan bool)
@@ -261,8 +263,8 @@ func (s *Server) f16(source string, rbuf []byte) []byte {
 	return wbuf
 }
 func (s *Server) passCommMsg(source string, id, fn uint8, addr uint16, coils []bool, regs []uint16) {
-	if s.chanCommInspect != nil || len(s.chanCommInspect) < cap(s.chanCommInspect) {
-		s.chanCommInspect <- CommMSG{
+	if s.ChanCommInspect != nil || len(s.ChanCommInspect) < cap(s.ChanCommInspect) {
+		s.ChanCommInspect <- CommMSG{
 			Source:   source,
 			ID:       id,
 			Fn:       fn,
@@ -330,16 +332,16 @@ func (s *Server) processor(conn net.Conn) {
 
 // UseCommInspect ...
 func (s *Server) UseCommInspect(size int) {
-	s.chanCommInspect = make(chan CommMSG, size)
+	s.ChanCommInspect = make(chan CommMSG, size)
 	// return Cfd
 }
 
 // ListenCommInspect ...
 func (s *Server) ListenCommInspect() CommMSG {
-	if s.chanCommInspect == nil {
+	if s.ChanCommInspect == nil {
 		panic("should init CommInspect before use it")
 	}
-	return <-s.chanCommInspect
+	return <-s.ChanCommInspect
 }
 
 // Start the Modbus server listening on "address:port".
@@ -367,37 +369,6 @@ func (s *Server) Start(addressPort string) {
 		select {
 		case <-s.done:
 			break
-		}
-	}
-}
-
-// StartWithContext start the Modbus server listening on "address:port" with context.
-func (s *Server) StartWithContext(ctx context.Context, addressPort string) {
-	//set server listen
-	listen, err := net.Listen("tcp", addressPort)
-	if err != nil {
-		log.Printf("Failed to Listen: %v\n", err)
-	}
-	s.listener = listen
-	defer s.listener.Close()
-
-	//start server listening
-	go func() {
-		for {
-			conn, err := s.listener.Accept()
-			if err != nil {
-				log.Printf("Unable to accept connections: %#v\n", err)
-			}
-			go s.processor(conn)
-		}
-	}()
-
-	for {
-		select {
-		case <-s.done:
-			return
-		case <-ctx.Done():
-			return
 		}
 	}
 }
