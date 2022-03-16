@@ -47,12 +47,20 @@ func main() {
     mbs := mbserver.NewServer(2)
 
     // mbs.Datas[0] for handle Device ID1
-    fmt.Println(mbs.Datas[0].ReadReg(0, 10))
+    fmt.Println(mbs.Datas[0].WriteCoil(0, []bool{true,false,true}))
+    fmt.Println(mbs.Datas[0].ReadCoil(0, 3))
+
+    fmt.Println(mbs.Datas[0].WriteCoilIn(0, []bool{true,false,true}))
+    fmt.Println(mbs.Datas[0].ReadCoilIn(0, 3))
+
     fmt.Println(mbs.Datas[0].WriteReg(0, []uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}))
     fmt.Println(mbs.Datas[0].ReadReg(0, 10))
 
+    fmt.Println(mbs.Datas[0].WriteRegIn(0, []uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}))
+    fmt.Println(mbs.Datas[0].ReadRegIn(0, 10))
+
+
     // mbs.Datas[1] for handle Device ID2
-    fmt.Println(mbs.Datas[1].ReadReg(0, 10))
     fmt.Println(mbs.Datas[1].WriteReg(0, []uint16{10, 9, 8, 7, 6, 5, 4, 3, 2, 1}))
     fmt.Println(mbs.Datas[1].ReadReg(0, 10))
 
