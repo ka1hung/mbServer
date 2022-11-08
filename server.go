@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-//CommMSG is data struct for communication inspect
+// CommMSG is data struct for communication inspect
 type CommMSG struct {
 	Source   string
 	ID       uint8
@@ -46,7 +46,11 @@ func (s *Server) f1(source string, rbuf []byte) []byte {
 	lens := uint16(rbuf[10])<<8 | uint16(rbuf[11])
 	id := rbuf[6] - 1
 	fn := rbuf[7]
-	data, err := s.Datas[id].ReadCoil(start, lens)
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	data, err := s.Datas[index].ReadCoil(start, lens)
 	if err != nil {
 		return nil
 	}
@@ -84,7 +88,11 @@ func (s *Server) f2(source string, rbuf []byte) []byte {
 	lens := uint16(rbuf[10])<<8 | uint16(rbuf[11])
 	id := rbuf[6] - 1
 	fn := rbuf[7]
-	data, err := s.Datas[id].ReadCoilIn(start, lens)
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	data, err := s.Datas[index].ReadCoilIn(start, lens)
 	if err != nil {
 		return nil
 	}
@@ -122,7 +130,11 @@ func (s *Server) f3(source string, rbuf []byte) []byte {
 	lens := uint16(rbuf[10])<<8 | uint16(rbuf[11])
 	id := rbuf[6] - 1
 	fn := rbuf[7]
-	data, err := s.Datas[id].ReadReg(start, lens)
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	data, err := s.Datas[index].ReadReg(start, lens)
 	if err != nil {
 		return nil
 	}
@@ -150,7 +162,11 @@ func (s *Server) f4(source string, rbuf []byte) []byte {
 	lens := uint16(rbuf[10])<<8 | uint16(rbuf[11])
 	id := rbuf[6] - 1
 	fn := rbuf[7]
-	data, err := s.Datas[id].ReadRegIn(start, lens)
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	data, err := s.Datas[index].ReadRegIn(start, lens)
 	if err != nil {
 		return nil
 	}
@@ -186,7 +202,11 @@ func (s *Server) f5(source string, rbuf []byte) []byte {
 		coil = true
 	}
 
-	err := s.Datas[id].WriteCoil(start, []bool{coil})
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	err := s.Datas[index].WriteCoil(start, []bool{coil})
 	if err != nil {
 		return nil
 	}
@@ -199,7 +219,12 @@ func (s *Server) f6(source string, rbuf []byte) []byte {
 	data := uint16(rbuf[10])<<8 | uint16(rbuf[11])
 	id := rbuf[6] - 1
 	fn := rbuf[7]
-	err := s.Datas[id].WriteReg(start, []uint16{data})
+
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	err := s.Datas[index].WriteReg(start, []uint16{data})
 	if err != nil {
 		return nil
 	}
@@ -224,7 +249,12 @@ func (s *Server) f15(source string, rbuf []byte) []byte {
 			data[i] = true
 		}
 	}
-	err := s.Datas[id].WriteCoil(start, data)
+
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	err := s.Datas[index].WriteCoil(start, data)
 	if err != nil {
 		return nil
 	}
@@ -249,7 +279,12 @@ func (s *Server) f16(source string, rbuf []byte) []byte {
 		value := uint16(rbuf[13+i*2])<<8 + uint16(rbuf[14+i*2])
 		data = append(data, value)
 	}
-	err := s.Datas[id].WriteReg(start, data)
+
+	index := id
+	if id == 255 {
+		index = 0
+	}
+	err := s.Datas[index].WriteReg(start, data)
 	if err != nil {
 		return nil
 	}
@@ -293,7 +328,7 @@ func (s *Server) processor(conn net.Conn) {
 		source := conn.RemoteAddr().String()
 
 		id := int(packet[6])
-		if id > len(s.Datas) || id <= 0 {
+		if id > len(s.Datas) || id < 0 {
 			return
 		}
 		funcCode := int(packet[7])
@@ -322,7 +357,7 @@ func (s *Server) processor(conn net.Conn) {
 		if len(wbuf) != 0 {
 			_, err = conn.Write(wbuf)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Println(err.Error())
 				return
 			}
 		}
