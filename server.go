@@ -19,6 +19,7 @@ type CommMSG struct {
 
 // Server is a Modbus slave with allocated memory for discrete inputs, coils, etc.
 type Server struct {
+	WhiteIPs        []string
 	listener        net.Listener
 	host            string
 	Datas           []Databank
@@ -34,7 +35,29 @@ func NewServer(num int) *Server {
 	s.Datas = make([]Databank, num)
 	return s
 }
+func (s *Server) CheckWhiteIPPass(addr string) bool {
+	if len(s.WhiteIPs) == 0 {
+		return true
+	}
 
+	ip, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return false
+	}
+
+	if ip == "localhost" ||
+		ip == "127.0.0.1" ||
+		ip == "::1" {
+		return true
+	}
+
+	for i := range s.WhiteIPs {
+		if s.WhiteIPs[i] == ip {
+			return true
+		}
+	}
+	return false
+}
 func (s *Server) passCommMsg(source string, id, fn uint8, addr uint16, coils []bool, regs []uint16) {
 	if s.ChanCommInspect != nil || len(s.ChanCommInspect) < cap(s.ChanCommInspect) {
 		s.ChanCommInspect <- CommMSG{
@@ -49,6 +72,11 @@ func (s *Server) passCommMsg(source string, id, fn uint8, addr uint16, coils []b
 }
 func (s *Server) processor(conn net.Conn) {
 	defer conn.Close()
+	if !s.CheckWhiteIPPass(conn.RemoteAddr().String()) {
+		log.Println("white ip list block: " + conn.RemoteAddr().String())
+		return
+	}
+
 	defer log.Println("disconnect from: " + conn.RemoteAddr().String())
 	log.Println("connect from: " + conn.RemoteAddr().String())
 
@@ -104,6 +132,11 @@ func (s *Server) processor(conn net.Conn) {
 }
 func (s *Server) processorWithContext(ctx context.Context, conn net.Conn) {
 	defer conn.Close()
+	if !s.CheckWhiteIPPass(conn.RemoteAddr().String()) {
+		log.Println("white ip list block: " + conn.RemoteAddr().String())
+		return
+	}
+
 	defer log.Println("disconnect from: " + conn.RemoteAddr().String())
 	log.Println("connect from: " + conn.RemoteAddr().String())
 
