@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-//Databank for store four data memory
+// Databank for store four data memory
 type Databank struct {
 	Coil      [0xffff]bool
 	CoilIn    [0xffff]bool
@@ -18,14 +18,10 @@ type Databank struct {
 }
 
 func checkRange(start, lens int) bool {
-	if start+lens >= 65536 {
-		return true
-	}
-
-	return false
+	return start+lens >= 65536
 }
 
-//ReadCoil for read data mutexable
+// ReadCoil for read data mutexable
 func (dd *Databank) ReadCoil(addr, lens uint16) ([]bool, error) {
 	if checkRange(int(addr), int(lens)) {
 		return nil, errors.New("access over range")
@@ -36,7 +32,7 @@ func (dd *Databank) ReadCoil(addr, lens uint16) ([]bool, error) {
 	return result, nil
 }
 
-//ReadCoilIn for read data mutexable
+// ReadCoilIn for read data mutexable
 func (dd *Databank) ReadCoilIn(addr, lens uint16) ([]bool, error) {
 	if checkRange(int(addr), int(lens)) {
 		return nil, errors.New("access over range")
@@ -47,7 +43,7 @@ func (dd *Databank) ReadCoilIn(addr, lens uint16) ([]bool, error) {
 	return result, nil
 }
 
-//ReadReg for read data mutexable
+// ReadReg for read data mutexable
 func (dd *Databank) ReadReg(addr, lens uint16) ([]uint16, error) {
 	if checkRange(int(addr), int(lens)) {
 		return nil, errors.New("access over range")
@@ -58,7 +54,7 @@ func (dd *Databank) ReadReg(addr, lens uint16) ([]uint16, error) {
 	return result, nil
 }
 
-//ReadRegIn for read data mutexable
+// ReadRegIn for read data mutexable
 func (dd *Databank) ReadRegIn(addr, lens uint16) ([]uint16, error) {
 	if checkRange(int(addr), int(lens)) {
 		return nil, errors.New("access over range")
@@ -69,7 +65,7 @@ func (dd *Databank) ReadRegIn(addr, lens uint16) ([]uint16, error) {
 	return result, nil
 }
 
-//WriteCoil for write data mutexable
+// WriteCoil for write data mutexable
 func (dd *Databank) WriteCoil(addr uint16, vals []bool) error {
 	if checkRange(int(addr), len(vals)) {
 		return errors.New("access over range")
@@ -80,7 +76,7 @@ func (dd *Databank) WriteCoil(addr uint16, vals []bool) error {
 	return nil
 }
 
-//WriteCoilIn for write data mutexable
+// WriteCoilIn for write data mutexable
 func (dd *Databank) WriteCoilIn(addr uint16, vals []bool) error {
 	if checkRange(int(addr), len(vals)) {
 		return errors.New("access over range")
@@ -91,7 +87,7 @@ func (dd *Databank) WriteCoilIn(addr uint16, vals []bool) error {
 	return nil
 }
 
-//WriteReg for write data mutexable
+// WriteReg for write data mutexable
 func (dd *Databank) WriteReg(addr uint16, vals []uint16) error {
 	if checkRange(int(addr), len(vals)) {
 		return errors.New("access over range")
@@ -102,7 +98,7 @@ func (dd *Databank) WriteReg(addr uint16, vals []uint16) error {
 	return nil
 }
 
-//WriteRegIn for write data mutexable
+// WriteRegIn for write data mutexable
 func (dd *Databank) WriteRegIn(addr uint16, vals []uint16) error {
 	if checkRange(int(addr), len(vals)) {
 		return errors.New("access over range")
